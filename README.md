@@ -3,7 +3,7 @@
 > **프로젝트 목표**: <br>전기·전자 분야에 관심은 있지만 자신과 맞을지 고민하는 사람들을 위해, <br>MBTI + 5가지 일상 질문을 통해 본인의 성향에 맞는 세부 분야와 직무를 찾아주는 보드게임 콘셉트의 웹 인터랙티브 진단 도구
 
 
-<img src="001.png" width="20%"> <img src="002.png" width="20%"> <img src="003.png" width="20%"> <img src="004.png" width="20%">
+<img src="001.png" width="25%"> <img src="002.png" width="25%"> <img src="003.png" width="25%"> <img src="004.png" width="25%">
 
 ---
 
