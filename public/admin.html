@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔧 관리자 — Circuit Explorer</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── admin overrides ── */
+    body { align-items: flex-start; padding: 30px 16px; }
+    #app { max-width: 1100px; }
+    .admin-header {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
+    }
+    .admin-header h1 { font-size: 1.4em; margin: 0; }
+    .admin-header .badge {
+      font-size: 0.8em; color: rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.06); padding: 4px 14px; border-radius: 20px;
+    }
+    .admin-controls { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* table */
+    .table-wrap {
+      overflow-x: auto;
+      background: rgba(255,255,255,0.03);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: 0.82em; min-width: 680px;
+    }
+    th {
+      text-align: left; padding: 12px 14px;
+      color: rgba(255,255,255,0.4); font-weight: 600;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      white-space: nowrap;
+      position: sticky; top: 0;
+      background: rgba(26,26,62,0.98);
+    }
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      color: rgba(255,255,255,0.7);
+      vertical-align: middle;
+    }
+    tr:hover td { background: rgba(0,210,255,0.03); }
+    tr:last-child td { border-bottom: none; }
+
+    .col-idx { width: 36px; text-align: center; color: rgba(255,255,255,0.25); }
+    .col-name { white-space: nowrap; }
+    .col-mbti { font-weight: 700; color: #00d2ff; }
+    .col-result { white-space: nowrap; }
+    .col-date { white-space: nowrap; font-size: 0.78em; color: rgba(255,255,255,0.35); }
+    .col-pdf { text-align: center; }
+
+    .result-tag {
+      display: inline-block; padding: 2px 10px; border-radius: 12px;
+      font-size: 0.78em; font-weight: 600;
+    }
+    .tag-has-pdf { background: rgba(0,210,255,0.12); color: #00d2ff; }
+    .tag-no-pdf  { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.25); }
+
+    .btn-sm {
+      padding: 5px 12px; font-size: 0.78em; border-radius: 8px;
+      border: none; cursor: pointer; font-weight: 600; transition: all 0.2s;
+      font-family: inherit;
+    }
+    .btn-dl { background: rgba(0,210,255,0.12); color: #00d2ff; }
+    .btn-dl:hover { background: rgba(0,210,255,0.2); }
+    .btn-dl:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .btn-del { background: rgba(255,71,87,0.1); color: #ff6b7a; }
+    .btn-del:hover { background: rgba(255,71,87,0.2); }
+
+    .btn-refresh {
+      background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .btn-refresh:hover { background: rgba(255,255,255,0.1); }
+
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.25);
+    }
+    .empty-state .icon { font-size: 3em; margin-bottom: 12px; }
+
+    /* mini profile */
+    .profile-preview {
+      font-size: 0.78em; color: rgba(255,255,255,0.4);
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="container glass">
+      <div class="admin-header">
+        <div>
+          <h1>🔧 관리자 패널</h1>
+          <span class="badge">Circuit Explorer — 접속자 결과 관리</span>
+        </div>
+        <div class="admin-controls">
+          <button class="btn-sm btn-refresh" onclick="loadData()">🔄 새로고침</button>
+          <button class="btn-sm btn-refresh" onclick="exportAll()">📦 전체 내보내기</button>
+          <a href="/" class="btn-sm btn-refresh" style="text-decoration:none;display:inline-block">← 메인으로</a>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-idx">#</th>
+              <th>이름</th>
+              <th>성별</th>
+              <th>나이</th>
+              <th class="col-mbti">MBTI</th>
+              <th>결과 분야</th>
+              <th class="col-date">일시</th>
+              <th class="col-pdf">PDF</th>
+              <th style="width:50px"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div id="empty-state" class="empty-state" style="display:none">
+          <div class="icon">📋</div>
+          <p>아직 저장된 결과가 없습니다.</p>
+          <p style="font-size:0.85em;color:rgba(255,255,255,0.15);margin-top:4px">
+            사용자가 설문을 완료하면 여기에 표시됩니다.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── load data ──
+    async function loadData() {
+      const tbody = document.getElementById('tbody');
+      const empty = document.getElementById('empty-state');
+
+      try {
+        const res = await fetch('/api/results');
+        const data = await res.json();
+
+        if (!data || data.length === 0) {
+          tbody.innerHTML = '';
+          empty.style.display = 'block';
+          return;
+        }
+        empty.style.display = 'none';
+
+        tbody.innerHTML = data.map((r, i) => {
+          const profile = r.profile || {};
+          const title = profile.title || r.resultKey || '-';
+          const date = r.timestamp
+            ? new Date(r.timestamp).toLocaleString('ko-KR')
+            : '-';
+
+          return '<tr>' +
+            '<td class="col-idx">' + (i + 1) + '</td>' +
+            '<td class="col-name">' + (r.nameMasked || r.name) + '</td>' +
+            '<td>' + (r.gender || '-') + '</td>' +
+            '<td>' + (r.ageMasked || r.age) + '세</td>' +
+            '<td class="col-mbti">' + (r.mbti || '-') + '</td>' +
+            '<td class="col-result">' +
+              '<span class="result-tag ' + (r.hasPdf ? 'tag-has-pdf' : 'tag-no-pdf') + '">' +
+                title +
+              '</span>' +
+              '<div class="profile-preview">' + (profile.summary || '') + '</div>' +
+            '</td>' +
+            '<td class="col-date">' + date + '</td>' +
+            '<td class="col-pdf">' +
+              (r.hasPdf
+                ? '<button class="btn-sm btn-dl" onclick="downloadPdf(\'' + r.id + '\')">📄 PDF</button>'
+                : '<button class="btn-sm btn-dl" onclick="generatePdf(\'' + r.id + '\')" title="서버에서 PDF 생성">⚡ 생성</button>'
+              ) +
+            '</td>' +
+            '<td>' +
+              '<button class="btn-sm btn-del" onclick="deleteResult(\'' + r.id + '\', ' + i + ')" title="삭제">✕</button>' +
+            '</td>' +
+            '</tr>';
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#ff6b7a;padding:30px">' +
+          '⚠️ 서버 연결 실패: ' + err.message + '</td></tr>';
+      }
+    }
+
+    // ── download stored PDF ──
+    function downloadPdf(id) {
+      window.open('/api/result/' + id + '/pdf', '_blank');
+    }
+
+    // ── generate server-side PDF ──
+    function generatePdf(id) {
+      window.open('/api/result/' + id + '/pdf', '_blank');
+    }
+
+    // ── delete ──
+    async function deleteResult(id, idx) {
+      if (!confirm('이 결과를 삭제하시겠습니까?')) return;
+      try {
+        const res = await fetch('/api/result/' + id, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) loadData();
+      } catch (err) {
+        alert('삭제 실패: ' + err.message);
+      }
+    }
+
+    // ── export all (basic CSV) ──
+    async function exportAll() {
+      try {
+        const res = await fetch('/api/results');
+        const data = await res.json();
+        if (!data || data.length === 0) { alert('내보낼 데이터가 없습니다.'); return; }
+
+        let csv = '순번,이름,성별,나이,MBTI,결과분야,일시\n';
+        data.forEach((r, i) => {
+          const title = (r.profile && r.profile.title) || r.resultKey || '';
+          const date = r.timestamp ? new Date(r.timestamp).toLocaleString('ko-KR') : '';
+          csv += (i + 1) + ',' +
+            (r.nameMasked || r.name) + ',' +
+            (r.gender || '') + ',' +
+            (r.ageMasked || r.age) + ',' +
+            (r.mbti || '') + ',' +
+            title + ',' +
+            date + '\n';
+        });
+
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Circuit_Explorer_export_' + new Date().toISOString().slice(0,10) + '.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert('내보내기 실패: ' + err.message);
+      }
+    }
+
+    // ── auto-refresh every 15s ──
+    loadData();
+    setInterval(loadData, 15000);
+  </script>
+</body>
+</html>

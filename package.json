@@ -1,0 +1,13 @@
+{
+  "name": "circuit-explorer",
+  "version": "1.0.0",
+  "description": "전기·전자 성향 탐색 보드게임 프로토타입",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "pdfkit": "^0.15.2"
+  }
+}

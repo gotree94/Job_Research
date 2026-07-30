@@ -1,0 +1,53 @@
+[
+  {
+    "id": "f7cac479-1a69-45bf-b742-03d90e74681b",
+    "name": "김남우",
+    "gender": "남성",
+    "age": 45,
+    "mbti": "INFP",
+    "answers": [
+      "A",
+      "B",
+      "B",
+      "A",
+      "B"
+    ],
+    "resultKey": "tech_sales",
+    "timestamp": "2026-07-30T15:00:32.991Z",
+    "hasPdf": true
+  },
+  {
+    "id": "1346c871-41d5-48f4-9ca6-d762fdb1a5a0",
+    "name": "김남우",
+    "gender": "남성",
+    "age": 44,
+    "mbti": "INFP",
+    "answers": [
+      "B",
+      "A",
+      "A",
+      "A",
+      "B"
+    ],
+    "resultKey": "quality",
+    "timestamp": "2026-07-30T15:42:30.990Z",
+    "hasPdf": true
+  },
+  {
+    "id": "bd6cab97-f041-49a6-ae6a-d57a55bf18ab",
+    "name": "김남우",
+    "gender": "남성",
+    "age": 25,
+    "mbti": "ISTP",
+    "answers": [
+      "A",
+      "B",
+      "A",
+      "B",
+      "B"
+    ],
+    "resultKey": "embedded",
+    "timestamp": "2026-07-30T16:16:32.280Z",
+    "hasPdf": true
+  }
+]
